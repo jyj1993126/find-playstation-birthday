@@ -43,7 +43,7 @@ Distributed under the Apache Licence 2.0
 - with runtime environment for specified program
 
 ## How to use
-- [PHP](php/README.md)
+- [PHP](php)
 
 
 ## About Me
